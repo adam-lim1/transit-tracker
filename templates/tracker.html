@@ -3,17 +3,22 @@
 <!-- <link rel="stylesheet" type="text/css" href="stylesheet.css"> -->
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/stylesheet.css') }}">
 
-<!-- Refresh page every 10 seconds -->
+<!-- Refresh page every 60 seconds -->
 <head>
   <meta http-equiv="refresh" content="60">
+  <style>
+  body {
+    background-color: black;
+  }
+  </style>
 </head>
 
 <body>
 
-<h4> Sedgwick </h4>
+
+<h4 style="color: white; font-family: Helvetica"> Sedgwick </h4>
 
 <div class="rectangle-container">
-  <!-- <div class={{ train_list[0][3] }}> -->
   <div class="{{ train_list[0][3] }}">
     <h3 class="transit-name"> {{ train_list[0][1] }} </h3>
     <h3 class="transit-time"> {{ train_list[0][2] }} min</h3>
@@ -41,25 +46,24 @@
   </div>
 </div>
 
-<h4> 72 Bus </h4>
+<h3 style="color: white; font-family: Helvetica"> North Ave / Sedgwick </h3>
 
 <div class="rectangle-container">
   <div class="transit-rectangle-bus">
-    <h3 class="transit-name"> Loop </h3>
-    <h3 class="transit-time"> 2 min </h3>
+    <h3 class="transit-name"> {{ bus_list[0][0] }} (72)</h3>
+    <h3 class="transit-time"> {{ bus_list[0][1] }} min </h3>
   </div>
 </div>
 
 <div class="rectangle-container">
   <div class="transit-rectangle-bus">
-    <h3 class="transit-name"> Loop </h3>
-    <h3 class="transit-time"> 11 min </h3>
+    <h3 class="transit-name"> {{ bus_list[1][0] }} (72) </h3>
+    <h3 class="transit-time"> {{ bus_list[1][1] }} min </h3>
   </div>
 </div>
 
-<h2>JavaScript new Date()</h2>
-
-<p id="demo"></p>
+<!-- Last Refresh Time -->
+<p id="demo" style="color: white; font-family: Helvetica"></p>
 
 <script>
 var d = new Date();

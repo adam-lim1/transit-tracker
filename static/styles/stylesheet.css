@@ -10,22 +10,6 @@
   border-radius: 10px;
 }
 
-/* .transit-rectangle-P {
-  background-color: #411c86;
-  width: 90%;
-  height: 100px;
-  display: inline-block;
-  border-radius: 10px;
-} */
-
-/* .transit-rectangle-brown {
-  background-color: #62371b;
-  width: 90%;
-  height: 100px;
-  display: inline-block;
-  border-radius: 10px;
-} */
-
 .transit-rectangle-purple {
   background-color: #411c86;
   width: 90%;
@@ -51,18 +35,11 @@
   line-height: 65px;
 }
 
-.transit-time{
+.transit-time {
   float: right;
   color: white;
   font-size: 4.2em;
   font-family: Helvetica;
   margin: 20px;
   line-height: 65px;
-}
-
-.yellow-square {
-  background-color: #FFDC00;
-  max-width: 1600px;
-  height: 100px;
-  margin: 0 auto;
 }
