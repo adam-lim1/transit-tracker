@@ -44,7 +44,8 @@ def tracker_page():
     endpoint = "http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={key}&mapid={mapid}&outputType=JSON".format(key=train_key, mapid=mapid)
     response = requests.get(endpoint).json() #['ctatt']['eta']
 
-    train_info = [(x['rt'], x['destNm'], getTrainTime(x['arrT']),getRouteClass(x['rt'])) for x in response['ctatt']['eta']][0:5] # First 4 entries
+    # train_info = [(x['rt'], x['destNm'], getTrainTime(x['arrT']),getRouteClass(x['rt'])) for x in response['ctatt']['eta']][0:5] # First 4 entries
+    train_info = [(x['rt'], x['destNm'], x['arrT'],getRouteClass(x['rt'])) for x in response['ctatt']['eta']][0:5] # First 4 entries
 
     ####### BUS INFO #######
 
