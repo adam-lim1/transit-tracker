@@ -44,8 +44,13 @@ def tracker_page():
     endpoint = "http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={key}&mapid={mapid}&outputType=JSON".format(key=train_key, mapid=mapid)
     response = requests.get(endpoint).json() #['ctatt']['eta']
 
-    # train_info = [(x['rt'], x['destNm'], getTrainTime(x['arrT']),getRouteClass(x['rt'])) for x in response['ctatt']['eta']][0:5] # First 4 entries
-    train_info = [(x['rt'], x['destNm'], x['arrT'],getRouteClass(x['rt'])) for x in response['ctatt']['eta']][0:5] # First 4 entries
+    train_info = [[x['rt'], x['destNm'], x['arrT'],getRouteClass(x['rt'])] for x in response['ctatt']['eta']][0:4] # First 4 entries
+
+    # Add JavaScript ID for time countdown
+    for i in range(0, len(train_info)):
+        train_info[i].append("train{}".format(i+1))
+
+    #print(train_info)
 
     ####### BUS INFO #######
 
@@ -54,8 +59,9 @@ def tracker_page():
     endpoint = "http://www.ctabustracker.com/bustime/api/v2/getpredictions?key={key}&stpid={stpid}&rt={rt}&format=json".format(key=bus_key, stpid=stpid, rt=rt)
     response = requests.get(endpoint)
     response = response.json()['bustime-response']['prd']
-
+    #response = [{'tmstmp': '20200223 21:36', 'typ': 'A', 'stpnm': 'North Avenue & Sedgwick', 'stpid': '927', 'vid': '8235', 'dstp': 1797, 'rt': '72', 'rtdd': '72', 'rtdir': 'Westbound', 'des': 'Harlem', 'prdtm': '20200223 21:42', 'tablockid': '72 -810', 'tatripid': '1010106', 'dly': False, 'prdctdn': '6', 'zone': ''}]
     bus_info = [(x['des'], getBusTime(x['prdtm'])) for x in response[0:2]]
+    #print(bus_info)
 
     ####### RETURN INFO #######
 

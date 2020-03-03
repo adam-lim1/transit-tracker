@@ -18,54 +18,27 @@
 
 <h4 style="color: white; font-family: Helvetica"> Sedgwick </h4>
 
-<div class="rectangle-container">
-  <div class="{{ train_list[0][3] }}">
-    <h3 class="transit-name"> {{ train_list[0][1] }} </h3>
-    <h3 class="transit-time" id="train1">
-
-    </h3>
+<!-- Jinja for train arrivals -->
+{% for train in train_list %}
+  <div class="rectangle-container">
+    <div class="{{ train[3] }}">
+      <h3 class="transit-name"> {{ train[1] }} </h3>
+      <h3 class="transit-time" id="{{ train[4] }}"> </h3>
+    </div>
   </div>
-</div>
-
-<div class="rectangle-container">
-  <div class="{{ train_list[1][3] }}">
-    <h3 class="transit-name"> {{ train_list[1][1] }} </h3>
-    <!-- <h3 class="transit-time"> {{ train_list[1][2] }} min</h3> -->
-    <h3 class="transit-time" id="train2"> </h3>
-  </div>
-</div>
-
-<div class="rectangle-container">
-  <div class="{{ train_list[2][3] }}">
-    <h3 class="transit-name"> {{ train_list[2][1] }} </h3>
-    <!-- <h3 class="transit-time"> {{ train_list[2][2] }} min </h3> -->
-    <h3 class="transit-time" id="train3"> </h3>
-  </div>
-</div>
-
-<div class="rectangle-container">
-  <div class="{{ train_list[3][3] }}">
-    <h3 class="transit-name"> {{ train_list[3][1] }} </h3>
-    <!-- <h3 class="transit-time"> {{ train_list[3][2] }} min </h3> -->
-    <h3 class="transit-time" id="train4"> </h3>
-  </div>
-</div>
+{% endfor %}
 
 <h3 style="color: white; font-family: Helvetica"> North Ave / Sedgwick </h3>
 
-<div class="rectangle-container">
-  <div class="transit-rectangle-bus">
-    <h3 class="transit-name"> {{ bus_list[0][0] }} (72)</h3>
-    <h3 class="transit-time"> {{ bus_list[0][1] }} min </h3>
+<!-- Jinja for bus arrivals -->
+{% for bus in bus_list %}
+  <div class="rectangle-container">
+    <div class="transit-rectangle-bus">
+      <h3 class="transit-name"> {{ bus[0] }} (72) </h3>
+      <h3 class="transit-time"> {{ bus[1] }} min </h3>
+    </div>
   </div>
-</div>
-
-<div class="rectangle-container">
-  <div class="transit-rectangle-bus">
-    <h3 class="transit-name"> {{ bus_list[1][0] }} (72) </h3>
-    <h3 class="transit-time"> {{ bus_list[1][1] }} min </h3>
-  </div>
-</div>
+{% endfor %}
 
 <!-- Last Refresh Time -->
 <p id="demo" style="color: white; font-family: Helvetica"></p>
@@ -75,6 +48,7 @@ var d = new Date();
 document.getElementById("demo").innerHTML = d;
 </script>
 
+<!-- JavaScript countdown from target_time, display for HTML id -->
 <script>
 function countdown(target_time, id){
   var countDownDate = new Date(target_time).getTime(); // "Jan 5, 2021 15:37:25"
@@ -90,10 +64,6 @@ function countdown(target_time, id){
   var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
   var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-  // Output the result in an element with id="demo"
-  // document.getElementById(id).innerHTML = days + "d " + hours + "h "
-  // + minutes + "m " + seconds + "s ";
-
   // document.getElementById(id).innerHTML = minutes + "m " + seconds + "s ";
   document.getElementById(id).innerHTML = minutes + "m ";
 
@@ -106,25 +76,16 @@ function countdown(target_time, id){
       document.getElementById(id).innerHTML = minutes + "m " + seconds + "s ";
   }
 
-
   return minutes, seconds;
 }
 
-var train1 = setInterval(function(){
-  countdown("{{ train_list[0][2] }}", "train1") // Insert Train Times here
+// Jinja for countdown object generation
+{% for train in train_list %}
+var {{ train[4] }} = setInterval(function(){
+  countdown("{{ train[2] }}", "{{ train[4] }}") // Insert Train Times here
 }, 1000);
+{% endfor %}
 
-var train2 = setInterval(function(){
-  countdown("{{ train_list[1][2] }}", "train2")
-}, 1000);
-
-var train3 = setInterval(function(){
-  countdown("{{ train_list[2][2] }}", "train3")
-}, 1000);
-
-var train4 = setInterval(function(){
-  countdown("{{ train_list[3][2] }}", "train4")
-}, 1000);
 </script>
 
 
