@@ -76,6 +76,13 @@ function countdown(target_time, id){
       document.getElementById(id).innerHTML = minutes + "m " + seconds + "s ";
   }
 
+  if (distance < 0){
+      document.getElementById(id).style.color = 'red';
+      var minutes = 0;
+      var seconds = 0;
+      document.getElementById(id).innerHTML = minutes + "m " + seconds + "s ";
+  }
+
   return minutes, seconds;
 }
 
