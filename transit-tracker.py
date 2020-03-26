@@ -54,7 +54,7 @@ def tracker_page():
     for i in range(0, len(train_info)):
         train_info[i].append("train{}".format(i+1))
 
-    print(train_info)
+    #print(train_info)
 
     ####### BUS INFO #######
 
@@ -70,7 +70,7 @@ def tracker_page():
     for i in range(0, len(bus_info)):
         bus_info[i].append("bus{}".format(i+1))
 
-    print(bus_info)
+    #print(bus_info)
 
     ####### RETURN INFO #######
 
