@@ -28,14 +28,16 @@
   </div>
 {% endfor %}
 
-<h3 style="color: white; font-family: Helvetica"> North Ave / Sedgwick </h3>
+<h4 style="color: white; font-family: Helvetica"> North Ave / Sedgwick </h3>
 
 <!-- Jinja for bus arrivals -->
 {% for bus in bus_list %}
   <div class="rectangle-container">
     <div class="transit-rectangle-bus">
       <h3 class="transit-name"> {{ bus[0] }} (72) </h3>
-      <h3 class="transit-time"> {{ bus[1] }} min </h3>
+      <h3 class="transit-time" id="{{ bus[2] }}"> </h3>
+      <!-- <h3 class="transit-time"> {{ bus[1] }} min </h3> -->
+      <!-- <h3 class="transit-time" id=bus1> </h3> -->
     </div>
   </div>
 {% endfor %}
@@ -90,6 +92,12 @@ function countdown(target_time, id){
 {% for train in train_list %}
 var {{ train[4] }} = setInterval(function(){
   countdown("{{ train[2] }}", "{{ train[4] }}") // Insert Train Times here
+}, 1000);
+{% endfor %}
+
+{% for bus in bus_list %}
+var {{ bus[2] }} = setInterval(function(){
+  countdown("{{ bus[1] }}", "{{ bus[2] }}") // Insert Train Times here
 }, 1000);
 {% endfor %}
 

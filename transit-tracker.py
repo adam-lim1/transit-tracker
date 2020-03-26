@@ -36,6 +36,13 @@ def getBusTime(input_str):
     time_diff = datetime.datetime.strptime(input_str, "%Y%m%d %H:%M") - datetime.datetime.now()
     return round(time_diff.seconds / 60)
 
+def getBusTimestamp(bus_arrival):
+    arrival_timestamp = datetime.datetime.strftime(
+    datetime.datetime.strptime(bus_arrival, "%Y%m%d %H:%M"),
+    "%Y-%m-%dT%H:%M:%S")
+
+    return arrival_timestamp
+
 @app.route('/')
 def tracker_page():
 
@@ -50,7 +57,7 @@ def tracker_page():
     for i in range(0, len(train_info)):
         train_info[i].append("train{}".format(i+1))
 
-    #print(train_info)
+    print(train_info)
 
     ####### BUS INFO #######
 
@@ -60,9 +67,17 @@ def tracker_page():
     response = requests.get(endpoint)
     response = response.json()['bustime-response']['prd']
     #response = [{'tmstmp': '20200223 21:36', 'typ': 'A', 'stpnm': 'North Avenue & Sedgwick', 'stpid': '927', 'vid': '8235', 'dstp': 1797, 'rt': '72', 'rtdd': '72', 'rtdir': 'Westbound', 'des': 'Harlem', 'prdtm': '20200223 21:42', 'tablockid': '72 -810', 'tatripid': '1010106', 'dly': False, 'prdctdn': '6', 'zone': ''}]
-    bus_info = [(x['des'], getBusTime(x['prdtm'])) for x in response[0:2]]
-    #print(bus_info)
+    # bus_info = [(x['des'], getBusTime(x['prdtm'])) for x in response[0:2]]
+    # bus_info = [(x['des'], getBusTimestamp(x['prdtm'])) for x in response[0:2]]
+    bus_info = [[x['des'], getBusTimestamp(x['prdtm'])] for x in response][0:2]
 
+    # Add JavaScript ID for time countdown
+    for i in range(0, len(bus_info)):
+        bus_info[i].append("bus{}".format(i+1))
+
+    print(bus_info)
+
+    bus_info = [['Harlem', '2020-03-26T13:30:00', 'bus1'], ['Harlem', '2020-03-26T13:40:00', 'bus2']]
     ####### RETURN INFO #######
 
     return render_template('tracker.html',
