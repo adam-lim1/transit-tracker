@@ -5,19 +5,19 @@ import configparser
 
 app = Flask(__name__)
 
+# Read Config Parameters
 config = configparser.RawConfigParser()
 config.read('config.txt')
 train_key = config.get('Credentials', 'train_key')
 bus_key = config.get('Credentials', 'bus_key')
 
+threshold_times = {}
+threshold_times['Train'] = {'Yellow': config.get('Threshold Times', 'train_yellow'),
+                            'Red': config.get('Threshold Times', 'train_red')}
+threshold_times['Bus'] = {'Yellow': config.get('Threshold Times', 'bus_yellow'),
+                            'Red': config.get('Threshold Times', 'bus_red')}
 
-def getTrainTime(input_str):
-    """
-    Return number of minutes until train is due
-    """
-    time_diff = datetime.datetime.strptime(input_str, "%Y-%m-%dT%H:%M:%S") - datetime.datetime.now()
-    return round(time_diff.seconds / 60)
-
+# Define Helpers
 def getRouteClass(rt):
     """
     Dynamically define CSS class named based on Train route
@@ -29,14 +29,11 @@ def getRouteClass(rt):
     else:
         return "transit-rectangle-bus"
 
-def getBusTime(input_str):
-    """
-    Return number of minutes until bus is due
-    """
-    time_diff = datetime.datetime.strptime(input_str, "%Y%m%d %H:%M") - datetime.datetime.now()
-    return round(time_diff.seconds / 60)
-
 def getBusTimestamp(bus_arrival):
+    """
+    Convert output from Bus Tracker API to usable timestamp format
+    Ex: '20200326 14:04' -> '2020-03-26T14:04:00'
+    """
     arrival_timestamp = datetime.datetime.strftime(
     datetime.datetime.strptime(bus_arrival, "%Y%m%d %H:%M"),
     "%Y-%m-%dT%H:%M:%S")
@@ -67,8 +64,6 @@ def tracker_page():
     response = requests.get(endpoint)
     response = response.json()['bustime-response']['prd']
     #response = [{'tmstmp': '20200223 21:36', 'typ': 'A', 'stpnm': 'North Avenue & Sedgwick', 'stpid': '927', 'vid': '8235', 'dstp': 1797, 'rt': '72', 'rtdd': '72', 'rtdir': 'Westbound', 'des': 'Harlem', 'prdtm': '20200223 21:42', 'tablockid': '72 -810', 'tatripid': '1010106', 'dly': False, 'prdctdn': '6', 'zone': ''}]
-    # bus_info = [(x['des'], getBusTime(x['prdtm'])) for x in response[0:2]]
-    # bus_info = [(x['des'], getBusTimestamp(x['prdtm'])) for x in response[0:2]]
     bus_info = [[x['des'], getBusTimestamp(x['prdtm'])] for x in response][0:2]
 
     # Add JavaScript ID for time countdown
@@ -77,9 +72,9 @@ def tracker_page():
 
     print(bus_info)
 
-    bus_info = [['Harlem', '2020-03-26T13:30:00', 'bus1'], ['Harlem', '2020-03-26T13:40:00', 'bus2']]
     ####### RETURN INFO #######
 
     return render_template('tracker.html',
                             train_list=train_info,
-                            bus_list=bus_info)
+                            bus_list=bus_info,
+                            threshold_times=threshold_times)
