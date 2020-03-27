@@ -5,19 +5,19 @@ import configparser
 
 app = Flask(__name__)
 
+# Read Config Parameters
 config = configparser.RawConfigParser()
 config.read('config.txt')
 train_key = config.get('Credentials', 'train_key')
 bus_key = config.get('Credentials', 'bus_key')
 
+threshold_times = {}
+threshold_times['Train'] = {'Yellow': config.get('Threshold Times', 'train_yellow'),
+                            'Red': config.get('Threshold Times', 'train_red')}
+threshold_times['Bus'] = {'Yellow': config.get('Threshold Times', 'bus_yellow'),
+                            'Red': config.get('Threshold Times', 'bus_red')}
 
-def getTrainTime(input_str):
-    """
-    Return number of minutes until train is due
-    """
-    time_diff = datetime.datetime.strptime(input_str, "%Y-%m-%dT%H:%M:%S") - datetime.datetime.now()
-    return round(time_diff.seconds / 60)
-
+# Define Helpers
 def getRouteClass(rt):
     """
     Dynamically define CSS class named based on Train route
@@ -29,12 +29,16 @@ def getRouteClass(rt):
     else:
         return "transit-rectangle-bus"
 
-def getBusTime(input_str):
+def getBusTimestamp(bus_arrival):
     """
-    Return number of minutes until bus is due
+    Convert output from Bus Tracker API to usable timestamp format
+    Ex: '20200326 14:04' -> '2020-03-26T14:04:00'
     """
-    time_diff = datetime.datetime.strptime(input_str, "%Y%m%d %H:%M") - datetime.datetime.now()
-    return round(time_diff.seconds / 60)
+    arrival_timestamp = datetime.datetime.strftime(
+    datetime.datetime.strptime(bus_arrival, "%Y%m%d %H:%M"),
+    "%Y-%m-%dT%H:%M:%S")
+
+    return arrival_timestamp
 
 @app.route('/')
 def tracker_page():
@@ -44,7 +48,13 @@ def tracker_page():
     endpoint = "http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={key}&mapid={mapid}&outputType=JSON".format(key=train_key, mapid=mapid)
     response = requests.get(endpoint).json() #['ctatt']['eta']
 
-    train_info = [(x['rt'], x['destNm'], getTrainTime(x['arrT']),getRouteClass(x['rt'])) for x in response['ctatt']['eta']][0:5] # First 4 entries
+    train_info = [[x['rt'], x['destNm'], x['arrT'],getRouteClass(x['rt'])] for x in response['ctatt']['eta']][0:4] # First 4 entries
+
+    # Add JavaScript ID for time countdown
+    for i in range(0, len(train_info)):
+        train_info[i].append("train{}".format(i+1))
+
+    #print(train_info)
 
     ####### BUS INFO #######
 
@@ -53,11 +63,18 @@ def tracker_page():
     endpoint = "http://www.ctabustracker.com/bustime/api/v2/getpredictions?key={key}&stpid={stpid}&rt={rt}&format=json".format(key=bus_key, stpid=stpid, rt=rt)
     response = requests.get(endpoint)
     response = response.json()['bustime-response']['prd']
+    #response = [{'tmstmp': '20200223 21:36', 'typ': 'A', 'stpnm': 'North Avenue & Sedgwick', 'stpid': '927', 'vid': '8235', 'dstp': 1797, 'rt': '72', 'rtdd': '72', 'rtdir': 'Westbound', 'des': 'Harlem', 'prdtm': '20200223 21:42', 'tablockid': '72 -810', 'tatripid': '1010106', 'dly': False, 'prdctdn': '6', 'zone': ''}]
+    bus_info = [[x['des'], getBusTimestamp(x['prdtm'])] for x in response][0:2]
 
-    bus_info = [(x['des'], getBusTime(x['prdtm'])) for x in response[0:2]]
+    # Add JavaScript ID for time countdown
+    for i in range(0, len(bus_info)):
+        bus_info[i].append("bus{}".format(i+1))
+
+    #print(bus_info)
 
     ####### RETURN INFO #######
 
     return render_template('tracker.html',
                             train_list=train_info,
-                            bus_list=bus_info)
+                            bus_list=bus_info,
+                            threshold_times=threshold_times)
