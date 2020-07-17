@@ -2,6 +2,8 @@ from flask import Flask, render_template, redirect
 import requests
 import datetime
 import configparser
+from pytz import timezone
+from tzlocal import get_localzone
 
 app = Flask(__name__)
 
@@ -29,16 +31,38 @@ def getRouteClass(rt):
     else:
         return "transit-rectangle-bus"
 
+def getLocalTime(dt_obj_naive):
+    """
+    Convert naive datetime object from CDT/CST to %Y-%m-%dT%H:%M:%S format
+    string of user's local time
+    """
+    chicago_dt_obj = timezone('America/Chicago').localize(dt_obj_naive)
+
+    # Get user's local timezone
+    local_tz = get_localzone()
+    local_dt_obj = chicago_dt_obj.astimezone(local_tz)
+    date_str_local = local_dt_obj.strftime("%Y-%m-%dT%H:%M:%S")
+
+    return date_str_local
+
+def getTrainTimestamp(train_arrival):
+    """
+    Given %Y-%m-%dT%H:%M:%S style string in Chicago timezone, get %Y-%m-%dT%H:%M:%S
+    style string in user's local timezone
+    """
+    train_arrival_dt = datetime.datetime.strptime(train_arrival, "%Y-%m-%dT%H:%M:%S")
+    local_train_arrival = getLocalTime(train_arrival_dt)
+    return local_train_arrival
+
 def getBusTimestamp(bus_arrival):
     """
-    Convert output from Bus Tracker API to usable timestamp format
+    Convert output from Bus Tracker API to usable timestamp format in user's local
+    timezone
     Ex: '20200326 14:04' -> '2020-03-26T14:04:00'
     """
-    arrival_timestamp = datetime.datetime.strftime(
-    datetime.datetime.strptime(bus_arrival, "%Y%m%d %H:%M"),
-    "%Y-%m-%dT%H:%M:%S")
-
-    return arrival_timestamp
+    bus_arrival_dt = datetime.datetime.strptime(bus_arrival, "%Y%m%d %H:%M")
+    local_bus_arrival = getLocalTime(bus_arrival_dt)
+    return local_bus_arrival
 
 @app.route('/')
 def tracker_page():
@@ -47,8 +71,8 @@ def tracker_page():
     mapid = '40800' # Sedgwick (All trains)
     endpoint = "http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={key}&mapid={mapid}&outputType=JSON".format(key=train_key, mapid=mapid)
     response = requests.get(endpoint).json() #['ctatt']['eta']
-
-    train_info = [[x['rt'], x['destNm'], x['arrT'],getRouteClass(x['rt'])] for x in response['ctatt']['eta']][0:4] # First 4 entries
+    
+    train_info = [[x['rt'], x['destNm'], getTrainTimestamp(x['arrT']), getRouteClass(x['rt'])] for x in response['ctatt']['eta']][0:4] # First 4 entries
 
     # Add JavaScript ID for time countdown
     for i in range(0, len(train_info)):
