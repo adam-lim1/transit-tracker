@@ -50,9 +50,12 @@ def getTrainTimestamp(train_arrival):
     Given %Y-%m-%dT%H:%M:%S style string in Chicago timezone, get %Y-%m-%dT%H:%M:%S
     style string in user's local timezone
     """
-    train_arrival_dt = datetime.datetime.strptime(train_arrival, "%Y-%m-%dT%H:%M:%S")
-    local_train_arrival = getLocalTime(train_arrival_dt)
-    return local_train_arrival
+    if train_arrival is None:
+        return 0
+    else:
+        train_arrival_dt = datetime.datetime.strptime(train_arrival, "%Y-%m-%dT%H:%M:%S")
+        local_train_arrival = getLocalTime(train_arrival_dt)
+        return local_train_arrival
 
 def getBusTimestamp(bus_arrival):
     """
@@ -60,9 +63,12 @@ def getBusTimestamp(bus_arrival):
     timezone
     Ex: '20200326 14:04' -> '2020-03-26T14:04:00'
     """
-    bus_arrival_dt = datetime.datetime.strptime(bus_arrival, "%Y%m%d %H:%M")
-    local_bus_arrival = getLocalTime(bus_arrival_dt)
-    return local_bus_arrival
+    if bus_arrival is None:
+        return 0
+    else:
+        bus_arrival_dt = datetime.datetime.strptime(bus_arrival, "%Y%m%d %H:%M")
+        local_bus_arrival = getLocalTime(bus_arrival_dt)
+        return local_bus_arrival
 
 @app.route('/')
 def tracker_page():
@@ -70,9 +76,16 @@ def tracker_page():
     ####### TRAIN INFO #######
     mapid = '40800' # Sedgwick (All trains)
     endpoint = "http://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?key={key}&mapid={mapid}&outputType=JSON".format(key=train_key, mapid=mapid)
-    response = requests.get(endpoint).json() #['ctatt']['eta']
-    
-    train_info = [[x['rt'], x['destNm'], getTrainTimestamp(x['arrT']), getRouteClass(x['rt'])] for x in response['ctatt']['eta']][0:4] # First 4 entries
+
+    try:
+        response = requests.get(endpoint).json()['ctatt']['eta']
+    except (KeyError, ValueError):
+        response = [{}] # Define default response type if error getting API response
+
+    train_info = [[x.get('rt'),
+                 x.get('destNm', 'No Info'),
+                 getTrainTimestamp(x.get('arrT', None)),
+                 getRouteClass(x.get('rt', None))] for x in response][0:4] # First 4 entries
 
     # Add JavaScript ID for time countdown
     for i in range(0, len(train_info)):
@@ -85,10 +98,16 @@ def tracker_page():
     stpid = 927 # North Ave / Sedgwick (Northeast Corner)
     rt = 72
     endpoint = "http://www.ctabustracker.com/bustime/api/v2/getpredictions?key={key}&stpid={stpid}&rt={rt}&format=json".format(key=bus_key, stpid=stpid, rt=rt)
-    response = requests.get(endpoint)
-    response = response.json()['bustime-response']['prd']
+
+    try:
+        response = requests.get(endpoint).json()['bustime-response']['prd']
+    except (KeyError, ValueError):
+        response = [{}] # Define default response type if error getting API response
+
     #response = [{'tmstmp': '20200223 21:36', 'typ': 'A', 'stpnm': 'North Avenue & Sedgwick', 'stpid': '927', 'vid': '8235', 'dstp': 1797, 'rt': '72', 'rtdd': '72', 'rtdir': 'Westbound', 'des': 'Harlem', 'prdtm': '20200223 21:42', 'tablockid': '72 -810', 'tatripid': '1010106', 'dly': False, 'prdctdn': '6', 'zone': ''}]
-    bus_info = [[x['des'], getBusTimestamp(x['prdtm'])] for x in response][0:2]
+
+    bus_info = [[x.get('des', 'No Info'),
+                getBusTimestamp(x.get('prdtm', None))] for x in response][0:2]
 
     # Add JavaScript ID for time countdown
     for i in range(0, len(bus_info)):
