@@ -10,5 +10,5 @@ MarkupSafe==1.1.1
 pytz==2020.1
 requests==2.31.0
 tzlocal==2.1
-urllib3==1.26.5
+urllib3==1.26.19
 Werkzeug==1.0.1
